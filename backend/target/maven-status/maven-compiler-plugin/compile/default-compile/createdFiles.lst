@@ -1,0 +1,7 @@
+com\example\clientmanagement\model\Client.class
+com\example\clientmanagement\Application.class
+com\example\clientmanagement\kafka\KafkaClientListener.class
+com\example\clientmanagement\service\ClientService.class
+com\example\clientmanagement\config\KafkaConfig.class
+com\example\clientmanagement\controller\ClientController.class
+com\example\clientmanagement\repository\ClientRepository.class
