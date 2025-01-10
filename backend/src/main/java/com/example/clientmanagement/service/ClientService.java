@@ -2,6 +2,8 @@ package com.example.clientmanagement.service;
 
 import com.example.clientmanagement.model.Client;
 import com.example.clientmanagement.repository.ClientRepository;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,6 +17,9 @@ public class ClientService {
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
+    @Value("${app.system-id}")
+    private String systemId;
+
     public List<Client> getAllClients() {
         return clientRepository.findAll();
     }
@@ -22,6 +27,7 @@ public class ClientService {
     public Client saveClient(Client client) {
         Client savedClient = clientRepository.save(client);
         try {
+            client.setSourceSystem(systemId);
             kafkaTemplate.send("new-client", objectMapper.writeValueAsString(savedClient));
         } catch (Exception e) {
             e.printStackTrace();

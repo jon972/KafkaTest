@@ -12,6 +12,17 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  postgres2:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: clientdb2
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data2:/var/lib/postgresql/data
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     environment:
@@ -46,13 +57,45 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_PROFILES_ACTIVE: db1
+      KAFKA_GROUP_ID: client-group-1
+
+  backend2:
+    build: ./backend
+    ports:
+      - "8081:8080"
+    depends_on:
+      - postgres2
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres2:5432/clientdb2
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      SPRING_PROFILES_ACTIVE: db2
+      INSTANCE_ID: backend2
+      KAFKA_GROUP_ID: client-group-2
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:8080/api
     ports:
       - "80:80"
     depends_on:
       - backend
 
+  frontend2:
+    build:
+      context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:8081/api
+    ports:
+      - "81:80"
+    depends_on:
+      - backend2
+
 volumes:
   postgres_data:
+  postgres_data2:
